@@ -64,6 +64,35 @@ export type Database = {
           },
         ]
       }
+      baby_food_statuses: {
+        Row: {
+          baby_id: string
+          food_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          baby_id: string
+          food_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          baby_id?: string
+          food_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_food_statuses_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       families: {
         Row: {
           created_at: string
@@ -114,6 +143,113 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "families"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      meals: {
+        Row: {
+          baby_id: string
+          created_at: string
+          created_by: string
+          dessert: string
+          dish: string
+          id: string
+          ingredients: string[]
+          kind: string
+          meal_date: string
+          meal_time: string
+          notes: string
+          updated_at: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          created_by?: string
+          dessert?: string
+          dish?: string
+          id?: string
+          ingredients?: string[]
+          kind?: string
+          meal_date?: string
+          meal_time?: string
+          notes?: string
+          updated_at?: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          created_by?: string
+          dessert?: string
+          dish?: string
+          id?: string
+          ingredients?: string[]
+          kind?: string
+          meal_date?: string
+          meal_time?: string
+          notes?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meals_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      observations: {
+        Row: {
+          baby_id: string
+          created_at: string
+          created_by: string
+          id: string
+          meal_id: string | null
+          no_reaction: boolean
+          notes: string
+          observed_at: string
+          skin: string
+          stool: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          meal_id?: string | null
+          no_reaction?: boolean
+          notes?: string
+          observed_at?: string
+          skin?: string
+          stool?: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          meal_id?: string | null
+          no_reaction?: boolean
+          notes?: string
+          observed_at?: string
+          skin?: string
+          stool?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observations_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observations_meal_id_baby_id_fkey"
+            columns: ["meal_id", "baby_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id", "baby_id"]
           },
         ]
       }
