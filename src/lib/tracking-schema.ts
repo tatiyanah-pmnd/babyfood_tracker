@@ -1,0 +1,6 @@
+import { z } from "zod";
+const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v, "Date invalide");
+export const mealSchema = z.object({ id: z.string().uuid().optional(), baby_id: z.string().uuid(), meal_date: date, meal_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/), kind: z.enum(["lunch", "snack"]), dish: z.string().trim().max(200), dessert: z.string().trim().max(200), ingredients: z.array(z.string().trim().min(1).max(100)).min(1, "Ajoutez au moins un ingrédient").max(40), notes: z.string().trim().max(2000) }).refine(v => Boolean(v.dish || v.dessert), "Indiquez un plat ou un dessert");
+export const observationSchema = z.object({ id: z.string().uuid().optional(), baby_id: z.string().uuid(), meal_id: z.string().uuid().nullable(), observed_at: z.string().datetime(), no_reaction: z.boolean(), skin: z.string().trim().max(500), stool: z.string().trim().max(500), notes: z.string().trim().max(2000) }).refine(v => !v.no_reaction || (!v.skin && !v.stool), "Une observation sans réaction ne peut contenir de symptômes").refine(v => v.no_reaction || Boolean(v.skin || v.stool || v.notes), "Renseignez une observation");
+export type MealInput = z.infer<typeof mealSchema>;
+export type ObservationInput = z.infer<typeof observationSchema>;
