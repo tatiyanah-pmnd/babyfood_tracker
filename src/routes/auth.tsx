@@ -52,7 +52,7 @@ function AuthPage() {
         return;
       }
       const parsed = credsSchema.safeParse({ email, password });
-      if (!parsed.success) return void toast.error(parsed.error.issues[0].message);
+      if (!parsed.success) return void toast.error(parsed.error.issues[0]?.message ?? "Formulaire invalide");
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           ...parsed.data,

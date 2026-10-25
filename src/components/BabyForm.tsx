@@ -24,7 +24,7 @@ export function BabyForm({
   submitLabel = "Enregistrer",
 }: {
   familyId: string;
-  baby?: Baby;
+  baby?: Baby | undefined;
   onSaved: (b: Baby) => void;
   submitLabel?: string;
 }) {
@@ -42,7 +42,7 @@ export function BabyForm({
   async function submit(e: FormEvent) {
     e.preventDefault();
     const p = schema.safeParse(v);
-    if (!p.success) return void toast.error(p.error.issues[0].message);
+    if (!p.success) return void toast.error(p.error.issues[0]?.message ?? "Formulaire invalide");
     const row = {
       first_name: p.data.first_name,
       birth_date: p.data.birth_date,
