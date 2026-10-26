@@ -121,9 +121,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { letter-spacing: -0.02em; }
+  h1, h2, h3 { letter-spacing: 0; }
 }
 
 @utility bg-hero { background-image: var(--gradient-hero); }
-@utility font-display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em;
+@utility font-display { font-family: var(--font-display); font-weight: 400; letter-spacing: 0;
 }

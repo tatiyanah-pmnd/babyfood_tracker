@@ -30,10 +30,11 @@ export const membershipsQuery = queryOptions({
   queryKey: ["memberships"],
   queryFn: async () => {
     const { data: u } = await supabase.auth.getUser();
+    if (!u.user) throw new Error("Veuillez vous connecter.");
     const { data, error } = await supabase
       .from("family_members")
       .select("family_id, role, families(name)")
-      .eq("user_id", u.user!.id);
+      .eq("user_id", u.user.id);
     if (error) throw error;
     return data;
   },

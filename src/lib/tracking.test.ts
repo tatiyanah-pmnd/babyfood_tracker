@@ -1,0 +1,12 @@
+import { describe, expect, it } from "vitest";
+import { FOODS } from "./foods";
+import { dashboardStats, foodStatus } from "./tracking-rules";
+import { mealSchema, observationSchema } from "./tracking-schema";
+const baby_id = "00000000-0000-4000-8000-000000000001";
+describe("Phase 2 rules", () => {
+  it("contains more than 60 distinct foods", () => { expect(FOODS.length).toBeGreaterThanOrEqual(60); expect(new Set(FOODS.map(f => f.id)).size).toBe(FOODS.length); });
+  it("accepts lunch and snack, not unsupported meal kinds", () => { const meal = { baby_id, meal_date: "2026-10-25", meal_time: "12:00", dish: "Purée", dessert: "Poire", ingredients: ["Carotte"], notes: "" }; expect(mealSchema.safeParse({ ...meal, kind: "lunch" }).success).toBe(true); expect(mealSchema.safeParse({ ...meal, kind: "snack" }).success).toBe(true); expect(mealSchema.safeParse({ ...meal, kind: "dinner" }).success).toBe(false); });
+  it("rejects symptoms when no reaction is selected", () => { const observation = { baby_id, meal_id: null, observed_at: "2026-10-25T12:00:00Z", no_reaction: true, skin: "", stool: "", notes: "" }; expect(observationSchema.safeParse(observation).success).toBe(true); expect(observationSchema.safeParse({ ...observation, skin: "Rougeur" }).success).toBe(false); expect(observationSchema.safeParse({ ...observation, stool: "Liquides" }).success).toBe(false); });
+  it("counts unique discovered foods and first discoveries this week", () => { const stats = dashboardStats([{ meal_date: "2026-10-18", ingredients: ["Carotte"] }, { meal_date: "2026-10-25", ingredients: ["Carotte", "Poire", "poire"] }], [], [{ no_reaction: true, skin: "", stool: "" }, { no_reaction: false, skin: "Rougeur", stool: "" }], new Date("2026-10-25T12:00:00")); expect(stats.discovered).toBe(2); expect(stats.newThisWeek).toBe(1); expect(stats.todayMeals).toBe(1); expect(stats.symptoms).toBe(1); });
+  it("derives discovered status from ingredients without interpreting observations", () => { expect(foodStatus("carotte", [{ meal_date: "2026-10-25", ingredients: ["carotte"] }], [])).toBe("discovered"); expect(foodStatus("carotte", [], [])).toBe("unseen"); expect(foodStatus("carotte", [], [{ food_id: "carotte", status: "review", updated_at: "2026-10-25" }])).toBe("review"); });
+});

@@ -1,19 +1,37 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, ComingSoon, PageHeader } from "@/components/AppShell";
-
+import { createFileRoute, Navigate, type SearchSchemaInput } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Search, Leaf, ArrowUpRight, Check } from "lucide-react";
+import { toast } from "sonner";
+import foodImage from "@/assets/food-library.jpg";
+import { AppShell, PageHeader } from "@/components/AppShell";
+import { BabySwitcher } from "@/components/BabySwitcher";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { EmptyState, TrackingError, TrackingNotFound, selectClass } from "@/components/TrackingShared";
+import { loadTracking, useTracking, trackingHead } from "@/lib/tracking";
+import { FOOD_SOURCE, GROUPS, STATUS_LABELS, normalizeFood, type Food, type FoodStatus } from "@/lib/foods";
+import { foodStatus } from "@/lib/tracking-rules";
+import { setFoodStatus } from "@/lib/tracking.functions";
 export const Route = createFileRoute("/_authenticated/aliments")({
-  head: () => ({
-    meta: [
-      { title: "Aliments — BabyFood Tracker" },
-      { name: "description", content: "La bibliothèque d'aliments" },
-      { property: "og:title", content: "Aliments — BabyFood Tracker" },
-      { property: "og:description", content: "La bibliothèque d'aliments" },
-    ],
-  }),
-  component: () => (
-    <AppShell>
-      <PageHeader title="Aliments" />
-      <ComingSoon title="La bibliothèque d'aliments" text="Plus de 60 aliments, conseils de préparation selon Santé publique France. Prochaine étape." />
-    </AppShell>
-  ),
+  validateSearch: (s: SearchSchemaInput & { q?: unknown; group?: unknown; status?: unknown }) => ({ q: typeof s["q"] === "string" ? s["q"] : "", group: typeof s["group"] === "string" && GROUPS.some(g => g === s["group"]) ? s["group"] : "all", status: typeof s["status"] === "string" && Object.keys(STATUS_LABELS).includes(s["status"]) ? s["status"] : "all" }),
+  loader: ({ context }) => loadTracking(context.queryClient), head: () => trackingHead("Aliments", "Une bibliothèque de plus de 60 aliments et le suivi des découvertes de bébé."), errorComponent: TrackingError, notFoundComponent: TrackingNotFound, component: Foods,
 });
+function Foods() {
+  const t = useTracking(); const search = Route.useSearch(); const navigate = Route.useNavigate(); const [selected, setSelected] = useState<Food | null>(null); const client = useQueryClient(); const save = useServerFn(setFoodStatus);
+  const mutation = useMutation({ mutationFn: (data: { baby_id: string; food_id: string; status: FoodStatus }) => save({ data }), onSuccess: async () => { await client.invalidateQueries({ queryKey: ["tracking"] }); toast.success("Statut enregistré"); }, onError: () => toast.error("Le statut n’a pas été enregistré. Réessayez.") });
+  if (!t.baby) return <Navigate to="/bienvenue" />; const baby = t.baby;
+  const foods = t.foods.filter(f => normalizeFood(f.name).includes(normalizeFood(search.q)) && (search.group === "all" || f.group === search.group) && (search.status === "all" || foodStatus(f.id, t.meals, t.statuses) === search.status));
+  const currentStatus = selected ? foodStatus(selected.id, t.meals, t.statuses) : "unseen";
+  const update = (key: "q" | "group" | "status", value: string) => navigate({ search: p => ({ ...p, [key]: value }), replace: true });
+  return <AppShell><PageHeader title="Aliments" eyebrow="Un monde de saveurs" action={<BabySwitcher babies={t.babies} current={baby} onSelect={t.select} />} />
+    <div className="relative mb-7 overflow-hidden"><img src={foodImage} alt="Purée de légumes, carotte, brocoli et poire" width={1536} height={1024} className="h-56 w-full object-cover" /><div className="absolute bottom-4 left-4 bg-background/95 px-4 py-3"><p className="font-display text-2xl">{t.foods.length} aliments à explorer</p><p className="mt-1 text-xs text-muted-foreground">Au rythme de {baby.first_name}</p></div></div>
+    <div className="space-y-3"><div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Rechercher un aliment" placeholder="Rechercher un aliment" className="pl-10" value={search.q} onChange={e => update("q", e.target.value)} /></div><div className="grid gap-3 sm:grid-cols-2"><select aria-label="Famille d’aliments" className={selectClass} value={search.group} onChange={e => update("group", e.target.value)}><option value="all">Toutes les familles</option>{GROUPS.map(g => <option key={g}>{g}</option>)}</select><select aria-label="Statut de découverte" className={selectClass} value={search.status} onChange={e => update("status", e.target.value)}><option value="all">Tous les statuts</option>{Object.entries(STATUS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div></div>
+    <p className="my-5 text-xs text-muted-foreground">{foods.length} aliments · Les aliments notés dans les repas sont comptés comme découverts.</p>
+    {!foods.length ? <EmptyState title="Aucun aliment trouvé" text="Essayez une autre recherche." /> : <div className="grid gap-3 sm:grid-cols-2">{foods.map(f => { const status = foodStatus(f.id, t.meals, t.statuses); return <Button key={f.id} variant="outline" className="h-auto min-h-24 justify-start gap-3 whitespace-normal bg-card p-4 text-left" onClick={() => setSelected(f)}><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-soft">{status === "discovered" ? <Check /> : <Leaf />}</span><span className="min-w-0"><span className="block font-display text-lg">{f.name}</span><span className="block text-xs text-muted-foreground">{f.group}</span><span className="mt-1 block text-xs">{STATUS_LABELS[status]}</span></span></Button>; })}</div>}
+    <section className="mt-8 border-t pt-6"><h2 className="font-display text-xl">Repères de diversification</h2><p className="mt-3 text-sm text-muted-foreground">La diversification commence généralement entre 4 et 6 mois, avec l’accompagnement d’un professionnel de santé. Adaptez progressivement les textures aux capacités de bébé, toujours assis et sous surveillance.</p><p className="mt-3 text-xs text-muted-foreground">Préparations générales inspirées des repères de Santé publique France ; ces fiches ne sont pas une validation officielle aliment par aliment. Aucun miel avant 1 an. Sans ajout de sel ni de sucre.</p><Button asChild variant="link" className="mt-2 px-0"><a href={FOOD_SOURCE} target="_blank" rel="noreferrer">Consulter les repères officiels<ArrowUpRight /></a></Button></section>
+    <Dialog open={Boolean(selected)} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto"><DialogTitle className="font-display text-2xl">{selected?.name}</DialogTitle><DialogDescription>{selected?.group}</DialogDescription><h3 className="font-medium">Préparation et texture</h3><p className="text-sm text-muted-foreground">{selected?.preparation}</p>{selected?.allergen && <p className="rounded-md bg-warning p-3 text-sm text-warning-foreground">Allergène présent : {selected.allergen}. Ce repère ne prédit pas une réaction.</p>}<p className="text-xs text-muted-foreground">Toujours adapter aux capacités de bébé et demander conseil en cas d’allergie connue.</p><label htmlFor="food-status" className="text-sm font-medium">Statut pour {baby.first_name}</label><select id="food-status" className={selectClass} disabled={!t.canEdit || mutation.isPending} value={currentStatus} onChange={e => { const status = e.target.value; if (selected && (status === "unseen" || status === "planned" || status === "review" || status === "discovered")) mutation.mutate({ baby_id: baby.id, food_id: selected.id, status }); }}><option value="unseen">Automatique selon les repas</option><option value="planned">À proposer</option><option value="discovered">Découvert</option><option value="review">À discuter avec un professionnel</option></select><p className="text-xs text-muted-foreground">« À discuter » est une note personnelle, pas un diagnostic. Retirer un statut manuel conserve les découvertes du journal.</p><Button asChild variant="link" className="justify-start px-0"><a href={FOOD_SOURCE} target="_blank" rel="noreferrer">Source : Santé publique France<ArrowUpRight /></a></Button></DialogContent></Dialog>
+  </AppShell>;
+}

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { BookOpen, Eye, Home, Leaf, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/accueil", label: "Accueil", icon: Home },
@@ -33,12 +34,12 @@ export function AppShell({ children, showFab = true }: { children: ReactNode; sh
           ))}
         </nav>
         {showFab && (
-          <button
-            onClick={() => navigate({ to: "/journal" })}
+          <Button
+            onClick={() => navigate({ to: "/journal", search: { add: true } })}
             className="mt-8 flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-soft"
           >
             <Plus className="h-4 w-4" /> Ajouter un repas
-          </button>
+          </Button>
         )}
       </aside>
 
@@ -47,13 +48,14 @@ export function AppShell({ children, showFab = true }: { children: ReactNode; sh
       </main>
 
       {showFab && (
-        <button
-          onClick={() => navigate({ to: "/journal" })}
+        <Button
+          size="icon"
+          onClick={() => navigate({ to: "/journal", search: { add: true } })}
           aria-label="Ajouter un repas"
           className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-float md:hidden"
         >
           <Plus className="h-6 w-6" />
-        </button>
+        </Button>
       )}
 
       <nav
@@ -85,8 +87,8 @@ export function AppShell({ children, showFab = true }: { children: ReactNode; sh
 
 export function PageHeader({ eyebrow, title, action }: { eyebrow?: string; title: string; action?: ReactNode }) {
   return (
-    <header className="mb-8 flex items-end justify-between gap-4">
-      <div>
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0 break-words">
         {eyebrow && <p className="mb-1 text-sm capitalize text-muted-foreground">{eyebrow}</p>}
         <h1 className="font-display text-3xl md:text-4xl">{title}</h1>
       </div>

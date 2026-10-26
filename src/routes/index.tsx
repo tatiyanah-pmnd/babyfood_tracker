@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Notez les repas de bébé, suivez les aliments découverts et les observations, en famille." },
       { property: "og:title", content: "BabyFood Tracker" },
       { property: "og:description", content: "Le carnet élégant de la diversification alimentaire de bébé." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   beforeLoad: async () => {

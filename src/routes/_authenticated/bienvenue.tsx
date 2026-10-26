@@ -10,6 +10,8 @@ export const Route = createFileRoute("/_authenticated/bienvenue")({
       { name: "description", content: "Créez le profil de votre bébé." },
       { property: "og:title", content: "Bienvenue — BabyFood Tracker" },
       { property: "og:description", content: "Premiers pas dans BabyFood Tracker." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Welcome,

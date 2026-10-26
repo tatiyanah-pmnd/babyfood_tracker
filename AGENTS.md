@@ -15,3 +15,5 @@
 - Signed-in pages live under `src/routes/_authenticated/` and wrap content in `AppShell` (bottom nav on mobile, sidebar on desktop).
 - Selected baby is a per-device UI preference in localStorage (`useSelectedBaby`); all data stays in the database.
 - Advertising data must stay separate from family/health data and never be targeted on it.
+- Tracking routes prime shared Query data through authenticated server functions; all tracking mutations use the caller-scoped client so family RLS remains authoritative.
+- The food catalogue is a versioned educational reference returned by the tracking service, while discoveries derive from meal ingredients and optional per-baby statuses to avoid duplicated health records.
