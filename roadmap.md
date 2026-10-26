@@ -7,12 +7,12 @@
 - [x] Onboarding + profils bébés (créer, modifier, supprimer, changer)
 - [x] Navigation mobile (barre du bas + bouton flottant) et barre latérale desktop
 
-## Phase 2 — Cœur
-- [ ] Demande en cours : construire et vérifier les quatre écrans de suivi avec données privées par bébé
-- [ ] Bibliothèque de 60+ aliments (Santé publique France), statuts par bébé
-- [ ] Journal : déjeuner (plat, dessert), goûter, ingrédients, autocomplétion
-- [ ] Observations peau/selles, « Aucune réaction observée », alerte 15/112
-- [ ] Tableau de bord (KPI, jauge d'exploration) + calendrier/historique
+## Phase 2 — Cœur (done)
+- [x] Quatre écrans vérifiés avec session réelle : enregistrement, relecture, découvertes, tableau de bord et suppression des essais
+- [x] Bibliothèque de 60+ aliments (Santé publique France), statuts par bébé
+- [x] Journal : déjeuner (plat, dessert), goûter, ingrédients, autocomplétion
+- [x] Observations peau/selles, « Aucune réaction observée », alerte 15/112
+- [x] Tableau de bord (KPI, jauge d'exploration) + calendrier/historique
 
 ## Phase 3 — Engagement
 - [ ] Invitations familiales par e-mail + rôles + révocation
