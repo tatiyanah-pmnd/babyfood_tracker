@@ -21,6 +21,8 @@ export const Route = createFileRoute("/_authenticated/profil")({
       { name: "description", content: "Profils des bébés, famille et compte." },
       { property: "og:title", content: "Profil — BabyFood Tracker" },
       { property: "og:description", content: "Gérez les profils et votre compte." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Profile,

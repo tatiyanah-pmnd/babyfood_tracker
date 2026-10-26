@@ -18,6 +18,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Connectez-vous ou créez votre compte BabyFood Tracker." },
       { property: "og:title", content: "Connexion — BabyFood Tracker" },
       { property: "og:description", content: "Accédez au carnet de diversification de votre bébé." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
