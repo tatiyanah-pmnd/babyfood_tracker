@@ -1,52 +1,24 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { format } from "date-fns";
+import { createFileRoute, Navigate, Link } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ArrowRight, Plus, Leaf, Utensils, Eye, Sparkles } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { BabySwitcher } from "@/components/BabySwitcher";
-import { formatAge, useSelectedBaby } from "@/lib/babies";
-import { Skeleton } from "@/components/ui/skeleton";
-
-export const Route = createFileRoute("/_authenticated/accueil")({
-  head: () => ({
-    meta: [
-      { title: "Accueil — BabyFood Tracker" },
-      { name: "description", content: "La journée de bébé en un coup d'œil." },
-      { property: "og:title", content: "Accueil — BabyFood Tracker" },
-      { property: "og:description", content: "Tableau de bord de la diversification." },
-    ],
-  }),
-  component: Home,
-});
-
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { formatAge } from "@/lib/babies";
+import { loadTracking, useTracking, trackingHead } from "@/lib/tracking";
+import { dashboardStats } from "@/lib/tracking-rules";
+import { EmptyState, TrackingError, TrackingNotFound } from "@/components/TrackingShared";
+export const Route = createFileRoute("/_authenticated/accueil")({ loader: ({ context }) => loadTracking(context.queryClient), head: () => trackingHead("Accueil", "La journée de bébé, les repas et les aliments découverts en un coup d’œil."), errorComponent: TrackingError, notFoundComponent: TrackingNotFound, component: Home });
 function Home() {
-  const { baby, babies, select, isLoading } = useSelectedBaby();
-  if (isLoading) return <AppShell><Skeleton className="h-40 rounded-3xl" /></AppShell>;
-  if (!baby) return <Navigate to="/bienvenue" />;
-
-  const today = format(new Date(), "EEEE d MMMM", { locale: fr });
-  return (
-    <AppShell>
-      <PageHeader eyebrow={today} title={`Bonjour ${baby.first_name}`} action={<BabySwitcher babies={babies} current={baby} onSelect={select} />} />
-      <section className="rounded-3xl bg-hero p-6 shadow-soft">
-        <p className="text-sm text-muted-foreground">Âge</p>
-        <p className="mt-1 font-display text-3xl">{formatAge(baby.birth_date)}</p>
-        {baby.diversification_start && (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Diversification commencée le {format(new Date(baby.diversification_start), "d MMMM yyyy", { locale: fr })}
-          </p>
-        )}
-      </section>
-      <section className="mt-6 grid gap-4 sm:grid-cols-2">
-        {["Aliments découverts", "Nouveaux cette semaine", "Observations avec symptômes", "Repas du jour"].map((k) => (
-          <div key={k} className="rounded-3xl bg-card p-5 shadow-soft">
-            <p className="text-sm text-muted-foreground">{k}</p>
-            <p className="mt-2 font-display text-3xl">0</p>
-          </div>
-        ))}
-      </section>
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        Les statistiques se rempliront dès l'ajout du journal des repas (prochaine étape).
-      </p>
-    </AppShell>
-  );
+  const t = useTracking(); if (!t.baby) return <Navigate to="/bienvenue" />; const baby = t.baby; const now = new Date(); const stats = dashboardStats(t.meals, t.statuses, t.observations, now);
+  const items = [{ label: "Aliments découverts", value: stats.discovered, icon: Leaf }, { label: "Nouveaux cette semaine", value: stats.newThisWeek, icon: Sparkles }, { label: "Observations avec symptômes", value: stats.symptoms, icon: Eye }, { label: "Repas du jour", value: stats.todayMeals, icon: Utensils }];
+  return <AppShell><PageHeader eyebrow={format(now, "EEEE d MMMM", { locale: fr })} title={`Bonjour ${baby.first_name}`} action={<BabySwitcher babies={t.babies} current={baby} onSelect={t.select} />} />
+    <section className="mb-7 border-y py-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-sm text-muted-foreground">Âge</p><p className="mt-1 font-display text-3xl">{formatAge(baby.birth_date)}</p>{baby.diversification_start && <p className="mt-2 text-xs text-muted-foreground">Diversification depuis le {format(parseISO(baby.diversification_start), "d MMMM yyyy", { locale: fr })}</p>}</div>{t.canEdit && <Button asChild><Link to="/journal" search={{ add: true }}><Plus />Ajouter un repas</Link></Button>}</div></section>
+    <section className="grid grid-cols-2 gap-3">{items.map(({ label, value, icon: Icon }) => <div key={label} className="rounded-xl border bg-card p-4 sm:p-5"><Icon className="mb-3 h-5 w-5 text-muted-foreground" /><p className="min-h-10 text-xs text-muted-foreground sm:text-sm">{label}</p><p className="mt-2 font-display text-3xl">{value}</p></div>)}</section>
+    <section className="mt-8 border-b pb-7"><div className="flex items-end justify-between"><h2 className="font-display text-2xl">L’exploration des saveurs</h2><span className="font-display text-2xl">{stats.exploration} %</span></div><Progress className="mt-4 h-2 bg-secondary" value={stats.exploration} aria-label="Aliments explorés" /><p className="mt-3 text-xs text-muted-foreground">{stats.discovered} sur {t.foods.length} aliments · Sans objectif ni course : chaque bébé avance à son rythme.</p><Button asChild variant="link" className="mt-2 px-0"><Link to="/aliments">La bibliothèque<ArrowRight /></Link></Button></section>
+    <section className="mt-8"><div className="flex items-center justify-between"><h2 className="font-display text-2xl">Derniers repas</h2><Button asChild variant="ghost" size="icon"><Link to="/journal" aria-label="Voir le journal"><ArrowRight /></Link></Button></div>{!t.meals.length ? <EmptyState title="La première bouchée se fait attendre" text="Aucun repas enregistré pour ce bébé." /> : <div className="mt-4 divide-y">{t.meals.slice(0, 3).map(m => <div key={m.id} className="py-4"><p className="text-xs text-muted-foreground">{format(parseISO(m.meal_date), "d MMMM", { locale: fr })} · {m.kind === "lunch" ? "Déjeuner" : "Goûter"}</p><p className="mt-1 font-medium">{m.dish || m.dessert}</p><p className="mt-1 text-xs text-muted-foreground">{m.ingredients.join(" · ")}</p></div>)}</div>}</section>
+    <section className="mt-6 border-t pt-6"><h2 className="font-display text-2xl">Dernière observation</h2>{t.observations[0] ? <div className="mt-3"><p className="text-xs text-muted-foreground">{format(new Date(t.observations[0].observed_at), "d MMMM · HH:mm", { locale: fr })}</p><p className="mt-2 text-sm">{t.observations[0].no_reaction ? "Aucune réaction observée" : "Observation notée — sans interprétation médicale"}</p></div> : <p className="mt-3 text-sm text-muted-foreground">Aucune observation enregistrée.</p>}<Button asChild variant="link" className="mt-2 px-0"><Link to="/observations">Voir les observations<ArrowRight /></Link></Button></section>
+  </AppShell>;
 }
