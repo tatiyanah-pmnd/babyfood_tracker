@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, type SearchSchemaInput } from "@tanstack/react-router";
 import { useState } from "react";
 import { format, parseISO, addDays, startOfWeek } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -12,7 +12,7 @@ import { DeleteEntry, EmptyState, TrackingError, TrackingNotFound } from "@/comp
 import { loadTracking, useTracking, trackingHead } from "@/lib/tracking";
 import type { Tables } from "@/integrations/supabase/types";
 export const Route = createFileRoute("/_authenticated/journal")({
-  validateSearch: (s: Record<string, unknown>) => ({ date: typeof s.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s.date) && !Number.isNaN(Date.parse(s.date)) ? s.date : format(new Date(), "yyyy-MM-dd"), view: s.view === "history" ? "history" : "day", add: s.add === true || s.add === "true" }),
+  validateSearch: (s: SearchSchemaInput & { date?: unknown; view?: unknown; add?: unknown }) => ({ date: typeof s["date"] === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s["date"]) && !Number.isNaN(Date.parse(s["date"])) ? s["date"] : format(new Date(), "yyyy-MM-dd"), view: s["view"] === "history" ? "history" : "day", add: s["add"] === true || s["add"] === "true" }),
   loader: ({ context }) => loadTracking(context.queryClient),
   head: () => trackingHead("Journal", "Le journal des déjeuners et goûters de bébé."), errorComponent: TrackingError, notFoundComponent: TrackingNotFound, component: Journal,
 });

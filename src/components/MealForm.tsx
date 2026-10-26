@@ -13,7 +13,7 @@ import { FOODS, normalizeFood } from "@/lib/foods";
 import { saveMeal } from "@/lib/tracking.functions";
 import { mealSchema, type MealInput } from "@/lib/tracking-schema";
 import type { Tables } from "@/integrations/supabase/types";
-export function MealForm({ babyId, initial, date, onClose }: { babyId: string; initial?: Tables<"meals">; date: string; onClose: () => void }) {
+export function MealForm({ babyId, initial, date, onClose }: { babyId: string; initial?: Tables<"meals"> | undefined; date: string; onClose: () => void }) {
   const [values, setValues] = useState<MealInput>({ id: initial?.id, baby_id: babyId, meal_date: initial?.meal_date ?? date, meal_time: initial?.meal_time.slice(0, 5) ?? format(new Date(), "HH:mm"), kind: initial?.kind === "snack" ? "snack" : "lunch", dish: initial?.dish ?? "", dessert: initial?.dessert ?? "", ingredients: initial?.ingredients ?? [], notes: initial?.notes ?? "" });
   const [ingredient, setIngredient] = useState(""); const [error, setError] = useState("");
   const client = useQueryClient(); const save = useServerFn(saveMeal);

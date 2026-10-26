@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, type SearchSchemaInput } from "@tanstack/react-router";
 import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -11,13 +11,13 @@ import { EmptyState, DeleteEntry, TrackingError, TrackingNotFound, selectClass }
 import { loadTracking, useTracking, trackingHead } from "@/lib/tracking";
 import type { Tables } from "@/integrations/supabase/types";
 export const Route = createFileRoute("/_authenticated/observations")({
-  validateSearch: (s: Record<string, unknown>) => ({ filter: s.filter === "symptoms" || s.filter === "none" ? s.filter : "all" }),
+  validateSearch: (s: SearchSchemaInput & { filter?: unknown }) => ({ filter: s["filter"] === "symptoms" || s["filter"] === "none" ? s["filter"] : "all" }),
   loader: ({ context }) => loadTracking(context.queryClient), head: () => trackingHead("Observations", "Notes de peau, selles et commentaires, sans diagnostic."), errorComponent: TrackingError, notFoundComponent: TrackingNotFound, component: Observations,
 });
 function Observations() {
   const t = useTracking(); const search = Route.useSearch(); const navigate = Route.useNavigate(); const [open, setOpen] = useState(false); const [editing, setEditing] = useState<Tables<"observations"> | null>(null);
   if (!t.baby) return <Navigate to="/bienvenue" />; const baby = t.baby;
-  const observations = t.observations.filter(o => search.filter === "all" || (search.filter === "none" ? o.no_reaction : !o.no_reaction && Boolean(o.skin || o.stool)));
+  const observations = t.observations["filter"](o => search.filter === "all" || (search.filter === "none" ? o.no_reaction : !o.no_reaction && Boolean(o.skin || o.stool)));
   return <AppShell showFab={false}><PageHeader title="Observations" eyebrow="Noter, sans interpréter" action={<BabySwitcher babies={t.babies} current={baby} onSelect={t.select} />} />
     <section className="mb-7 border-l-4 border-destructive bg-warning p-4 text-warning-foreground"><div className="flex items-center gap-2 font-medium"><TriangleAlert className="h-5 w-5" />En cas de signe grave</div><p className="mt-2 text-sm">Difficulté à respirer, gonflement du visage ou malaise : appelez immédiatement le 15 ou le 112.</p><div className="mt-3 flex gap-2"><Button asChild variant="outline"><a href="tel:15">Appeler le 15</a></Button><Button asChild variant="outline"><a href="tel:112">Appeler le 112</a></Button></div></section>
     <p className="mb-6 text-sm text-muted-foreground">Une observation ne permet pas de diagnostiquer une allergie ni d’attribuer un symptôme à un aliment. En cas de doute, demandez conseil à un professionnel de santé.</p>

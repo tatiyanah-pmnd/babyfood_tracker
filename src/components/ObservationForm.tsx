@@ -13,7 +13,7 @@ import { Textarea } from "./ui/textarea";
 import { Checkbox } from "./ui/checkbox";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { selectClass } from "./TrackingShared";
-export function ObservationForm({ babyId, meals, initial, onClose }: { babyId: string; meals: Tables<"meals">[]; initial?: Tables<"observations">; onClose: () => void }) {
+export function ObservationForm({ babyId, meals, initial, onClose }: { babyId: string; meals: Tables<"meals">[]; initial?: Tables<"observations"> | undefined; onClose: () => void }) {
   const [values, setValues] = useState({ meal_id: initial?.meal_id ?? "", no_reaction: initial?.no_reaction ?? false, skin: initial?.skin ?? "", stool: initial?.stool ?? "", notes: initial?.notes ?? "", time: format(initial ? new Date(initial.observed_at) : new Date(), "yyyy-MM-dd'T'HH:mm") });
   const [error, setError] = useState(""); const client = useQueryClient(); const save = useServerFn(saveObservation);
   const mutation = useMutation({ mutationFn: (data: ObservationInput) => save({ data }), onSuccess: async () => { await client.invalidateQueries({ queryKey: ["tracking"] }); toast.success("Observation enregistrée"); onClose(); }, onError: () => setError("L’observation n’a pas été enregistrée. Réessayez.") });

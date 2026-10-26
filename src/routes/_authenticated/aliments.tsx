@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, type SearchSchemaInput } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -16,7 +16,7 @@ import { FOOD_SOURCE, GROUPS, STATUS_LABELS, normalizeFood, type Food, type Food
 import { foodStatus } from "@/lib/tracking-rules";
 import { setFoodStatus } from "@/lib/tracking.functions";
 export const Route = createFileRoute("/_authenticated/aliments")({
-  validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : "", group: typeof s.group === "string" && GROUPS.some(g => g === s.group) ? s.group : "all", status: typeof s.status === "string" && Object.keys(STATUS_LABELS).includes(s.status) ? s.status : "all" }),
+  validateSearch: (s: SearchSchemaInput & { q?: unknown; group?: unknown; status?: unknown }) => ({ q: typeof s["q"] === "string" ? s["q"] : "", group: typeof s["group"] === "string" && GROUPS.some(g => g === s["group"]) ? s["group"] : "all", status: typeof s["status"] === "string" && Object.keys(STATUS_LABELS).includes(s["status"]) ? s["status"] : "all" }),
   loader: ({ context }) => loadTracking(context.queryClient), head: () => trackingHead("Aliments", "Une bibliothèque de plus de 60 aliments et le suivi des découvertes de bébé."), errorComponent: TrackingError, notFoundComponent: TrackingNotFound, component: Foods,
 });
 function Foods() {
