@@ -1,0 +1,22 @@
+import { useRef, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Camera, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "./ui/button";
+export function EntryPhotos({ babyId, entryId, kind, canEdit }: { babyId: string; entryId: string; kind: "meal" | "observation"; canEdit: boolean }) {
+  const input = useRef<HTMLInputElement>(null); const client = useQueryClient(); const [error, setError] = useState("");
+  const key = ["photos", babyId, kind, entryId];
+  const { data: photos = [], isLoading } = useQuery({ queryKey: key, queryFn: async () => { const { data, error } = await supabase.from("entry_photos").select("*").eq(kind === "meal" ? "meal_id" : "observation_id", entryId).eq("baby_id", babyId); if (error) throw error; return Promise.all(data.map(async photo => { const result = await supabase.storage.from("family-photos").createSignedUrl(photo.path, 60); if (result.error) throw result.error; return { ...photo, url: result.data.signedUrl }; })); }, staleTime: 30_000, refetchInterval: 45_000 });
+  const upload = useMutation({ mutationFn: async (file: File) => {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une photo JPEG, PNG ou WebP.");
+    if (file.size > 5 * 1024 * 1024) throw new Error("La photo doit faire moins de 5 Mo.");
+    const bitmap = await createImageBitmap(file); const canvas = document.createElement("canvas"); const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height)); canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale); const ctx = canvas.getContext("2d"); if (!ctx) throw new Error("Impossible de préparer la photo."); ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
+    const clean = await new Promise<Blob>((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Photo invalide")), "image/jpeg", 0.85));
+    const path = `${babyId}/${crypto.randomUUID()}.jpg`;
+    const result = await supabase.storage.from("family-photos").upload(path, clean, { contentType: "image/jpeg" }); if (result.error) throw new Error("Envoi de la photo impossible.");
+    const saved = await supabase.from("entry_photos").insert({ baby_id: babyId, meal_id: kind === "meal" ? entryId : null, observation_id: kind === "observation" ? entryId : null, path }); if (saved.error) { await supabase.storage.from("family-photos").remove([path]); throw new Error("Photo non enregistrée."); }
+  }, onSuccess: () => { setError(""); client.invalidateQueries({ queryKey: key }); toast.success("Photo ajoutée"); }, onError: e => setError(e instanceof Error ? e.message : "Envoi impossible") });
+  const remove = useMutation({ mutationFn: async (photo: { id: string; path: string }) => { const file = await supabase.storage.from("family-photos").remove([photo.path]); if (file.error) throw file.error; const result = await supabase.from("entry_photos").delete().eq("id", photo.id); if (result.error) throw result.error; }, onSuccess: () => client.invalidateQueries({ queryKey: key }), onError: () => toast.error("Suppression impossible") });
+  return <div className="mt-4"><div className="flex flex-wrap gap-3">{photos.map(p => <div key={p.id} className="relative"><a href={p.url} target="_blank" rel="noreferrer"><img src={p.url} alt={kind === "meal" ? "Photo du repas" : "Photo de l’observation"} width={112} height={112} loading="lazy" className="h-28 w-28 rounded-md object-cover" /></a>{canEdit && <Button type="button" size="icon" variant="secondary" className="absolute right-1 top-1" aria-label="Supprimer la photo" disabled={remove.isPending} onClick={() => { if (window.confirm("Supprimer cette photo ?")) remove.mutate(p); }}><Trash2 /></Button>}</div>)}</div>{isLoading && <p className="text-xs text-muted-foreground">Chargement des photos…</p>}{canEdit && <><input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) upload.mutate(file); e.target.value = ""; }} /><Button type="button" variant="ghost" size="sm" className="mt-2" disabled={upload.isPending} onClick={() => input.current?.click()}><Camera />{upload.isPending ? "Envoi…" : "Ajouter une photo"}</Button></>}{error && <p className="text-sm text-destructive" role="alert">{error}</p>}</div>;
+}

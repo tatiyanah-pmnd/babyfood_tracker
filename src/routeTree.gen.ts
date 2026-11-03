@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as InvitationRouteImport } from './routes/invitation'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccueilRouteImport } from './routes/_authenticated/accueil'
 import { Route as AuthenticatedAlimentsRouteImport } from './routes/_authenticated/aliments'
@@ -19,6 +20,7 @@ import { Route as AuthenticatedBienvenueRouteImport } from './routes/_authentica
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as AuthenticatedObservationsRouteImport } from './routes/_authenticated/observations'
 import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated/profil'
+import { Route as AuthenticatedRejoindreRouteImport } from './routes/_authenticated/rejoindre'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -32,6 +34,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitationRoute = InvitationRouteImport.update({
+  id: '/invitation',
+  path: '/invitation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -70,10 +77,16 @@ const AuthenticatedProfilRoute = AuthenticatedProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRejoindreRoute = AuthenticatedRejoindreRouteImport.update({
+  id: '/rejoindre',
+  path: '/rejoindre',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/invitation': typeof InvitationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
   '/aliments': typeof AuthenticatedAlimentsRoute
@@ -81,10 +94,12 @@ export interface FileRoutesByFullPath {
   '/journal': typeof AuthenticatedJournalRoute
   '/observations': typeof AuthenticatedObservationsRoute
   '/profil': typeof AuthenticatedProfilRoute
+  '/rejoindre': typeof AuthenticatedRejoindreRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/invitation': typeof InvitationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/accueil': typeof AuthenticatedAccueilRoute
   '/aliments': typeof AuthenticatedAlimentsRoute
@@ -92,12 +107,14 @@ export interface FileRoutesByTo {
   '/journal': typeof AuthenticatedJournalRoute
   '/observations': typeof AuthenticatedObservationsRoute
   '/profil': typeof AuthenticatedProfilRoute
+  '/rejoindre': typeof AuthenticatedRejoindreRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/invitation': typeof InvitationRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/accueil': typeof AuthenticatedAccueilRoute
   '/_authenticated/aliments': typeof AuthenticatedAlimentsRoute
@@ -105,12 +122,14 @@ export interface FileRoutesById {
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/observations': typeof AuthenticatedObservationsRoute
   '/_authenticated/profil': typeof AuthenticatedProfilRoute
+  '/_authenticated/rejoindre': typeof AuthenticatedRejoindreRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/invitation'
     | '/reset-password'
     | '/accueil'
     | '/aliments'
@@ -118,10 +137,12 @@ export interface FileRouteTypes {
     | '/journal'
     | '/observations'
     | '/profil'
+    | '/rejoindre'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/invitation'
     | '/reset-password'
     | '/accueil'
     | '/aliments'
@@ -129,11 +150,13 @@ export interface FileRouteTypes {
     | '/journal'
     | '/observations'
     | '/profil'
+    | '/rejoindre'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/invitation'
     | '/reset-password'
     | '/_authenticated/accueil'
     | '/_authenticated/aliments'
@@ -141,12 +164,14 @@ export interface FileRouteTypes {
     | '/_authenticated/journal'
     | '/_authenticated/observations'
     | '/_authenticated/profil'
+    | '/_authenticated/rejoindre'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  InvitationRoute: typeof InvitationRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
@@ -171,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invitation': {
+      id: '/invitation'
+      path: '/invitation'
+      fullPath: '/invitation'
+      preLoaderRoute: typeof InvitationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -222,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rejoindre': {
+      id: '/_authenticated/rejoindre'
+      path: '/rejoindre'
+      fullPath: '/rejoindre'
+      preLoaderRoute: typeof AuthenticatedRejoindreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -232,6 +271,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedObservationsRoute: typeof AuthenticatedObservationsRoute
   AuthenticatedProfilRoute: typeof AuthenticatedProfilRoute
+  AuthenticatedRejoindreRoute: typeof AuthenticatedRejoindreRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -241,6 +281,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedObservationsRoute: AuthenticatedObservationsRoute,
   AuthenticatedProfilRoute: AuthenticatedProfilRoute,
+  AuthenticatedRejoindreRoute: AuthenticatedRejoindreRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -250,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  InvitationRoute: InvitationRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport

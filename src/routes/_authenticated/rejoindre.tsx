@@ -1,0 +1,9 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { acceptInvitation } from "@/lib/engagement.functions";
+import { trackingHead } from "@/lib/tracking";
+import { Button } from "@/components/ui/button";
+import { AppShell } from "@/components/AppShell";
+export const Route = createFileRoute("/_authenticated/rejoindre")({ validateSearch: (s: { token?: unknown }) => ({ token: typeof s.token === "string" ? s.token : "" }), head: () => trackingHead("Rejoindre la famille", "Accepter une invitation familiale BabyFood Tracker."), component: Join });
+function Join() { const { token } = Route.useSearch(); const client = useQueryClient(); const accept = useServerFn(acceptInvitation); const mutation = useMutation({ mutationFn: () => accept({ data: token }), onSuccess: async () => { await client.invalidateQueries(); } }); return <AppShell showFab={false}><h1 className="font-display text-3xl">Rejoindre la famille</h1><p className="mt-4 text-sm text-muted-foreground">En acceptant, vous accédez aux profils, repas, observations et photos de cette famille selon le rôle attribué.</p>{mutation.isSuccess ? <><p className="mt-5">Invitation acceptée.</p><Button asChild className="mt-4"><Link to="/profil">Voir les profils partagés</Link></Button></> : <Button className="mt-6" disabled={!token || mutation.isPending} onClick={() => mutation.mutate()}>Accepter l’invitation</Button>}{mutation.error && <p className="mt-4 text-destructive" role="alert">{mutation.error.message}</p>}<p className="mt-6 text-xs text-muted-foreground">Si vous devez vous connecter, rouvrez ensuite le lien de l’invitation.</p></AppShell>; }

@@ -1,0 +1,5 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { trackingHead } from "@/lib/tracking";
+export const Route = createFileRoute("/invitation")({ validateSearch: (s: { token?: unknown }) => ({ token: typeof s.token === "string" ? s.token : "" }), head: () => trackingHead("Invitation familiale", "Rejoindre un espace familial privé BabyFood Tracker."), component: Invitation });
+function Invitation() { const { token } = Route.useSearch(); return <main className="mx-auto max-w-lg px-6 py-16"><p className="font-display text-xl">BabyFood Tracker</p><h1 className="mt-10 font-display text-3xl">Une place dans la famille</h1><p className="mt-4 text-muted-foreground">Pour rejoindre l’espace partagé, connectez-vous avec l’adresse e-mail à laquelle l’invitation est destinée.</p><Button asChild className="mt-6"><Link to="/rejoindre" search={{ token }}>Continuer</Link></Button></main>; }
