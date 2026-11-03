@@ -15,6 +15,7 @@
 - [x] Tableau de bord (KPI, jauge d'exploration) + calendrier/historique
 
 ## Phase 3 — Engagement
+- [ ] Demande en cours : partage familial sécurisé, photos privées, rappels et installation
 - [ ] Invitations familiales par e-mail + rôles + révocation
 - [ ] Photos (stockage privé), rappels in-app, push web si supporté
 - [ ] PWA installable (manifeste, sans cache des données de santé)

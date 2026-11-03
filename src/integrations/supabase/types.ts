@@ -93,6 +93,58 @@ export type Database = {
           },
         ]
       }
+      entry_photos: {
+        Row: {
+          baby_id: string
+          created_at: string
+          created_by: string
+          id: string
+          meal_id: string | null
+          observation_id: string | null
+          path: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          meal_id?: string | null
+          observation_id?: string | null
+          path: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          meal_id?: string | null
+          observation_id?: string | null
+          path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entry_photos_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entry_photos_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entry_photos_observation_id_fkey"
+            columns: ["observation_id"]
+            isOneToOne: false
+            referencedRelation: "observations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       families: {
         Row: {
           created_at: string
@@ -113,6 +165,53 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      family_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          created_by: string
+          email: string
+          expires_at: string
+          family_id: string
+          id: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["family_role"]
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string
+          email: string
+          expires_at?: string
+          family_id: string
+          id?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["family_role"]
+          token?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string
+          expires_at?: string
+          family_id?: string
+          id?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["family_role"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_invitations_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       family_members: {
         Row: {
@@ -277,6 +376,33 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_at: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_at: string
+          id?: string
+          title: string
+          user_id?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -300,7 +426,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_family_invitation: { Args: { _token: string }; Returns: string }
+      can_access_photo: {
+        Args: { _edit?: boolean; _path: string }
+        Returns: boolean
+      }
       can_edit_family: { Args: { _family_id: string }; Returns: boolean }
+      family_member_labels: {
+        Args: { _family_id: string }
+        Returns: {
+          display_name: string
+          id: string
+          role: Database["public"]["Enums"]["family_role"]
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
