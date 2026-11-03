@@ -15,6 +15,13 @@
       "when": 1792933849026,
       "tag": "0001_phase2_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793713761009,
+      "tag": "0002_phase3_family_photos_reminders",
+      "breakpoints": true
     }
   ]
 }
